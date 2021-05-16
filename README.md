@@ -3,7 +3,7 @@
 
 First studies exploring object orientation in Python applied to one of my favorite games: the "truco paulista".
 
-Not all the [rules of the game](https://www.jogatina.com/regras-como-jogar-truco.html) have been implemented so far, such as the special rounds or the TRUCO call. However, it is possible to play fluidly against a simple bot.
+Not all [game rules](https://www.jogatina.com/regras-como-jogar-truco.html) have been implemented so far, such as the special rounds or the TRUCO call. However, it is possible to play fluidly against a simple bot.
 
 The aim is to transform this into a Discord bot, with both singleplayer and multiplayer mode. To achieve this, I have been studying the basics of the discord.py library, as you can see in the [main.py](https://github.com/tofolo17/PyTruco/blob/main/main.py) file.
 ## O que você encontrará nesse repositório?
