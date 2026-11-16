@@ -1,6 +1,8 @@
-from random import randint, choice
+"""Classes do jogo: jogadores (humano e bot), rodada e turno."""
 
-from Functions import *
+from random import choice, randint
+
+from Functions import analise_de_jogo, escolhe
 
 
 class Humano:
@@ -15,17 +17,25 @@ class Humano:
 
 
 class Bot:
+    # Estratégia simples: escolhe a carta conforme a força da mão em
+    # relação à última carta jogada pelo humano (veja analise_de_jogo)
     def __init__(self, cartas: list):
         self.cartas = cartas
 
     def joga_carta(self, rodada, placar: list, ultima_carta: str = None):
         carta = None
-        poder_bot = analise_de_jogo(self.cartas, rodada, ultima_carta) if ultima_carta is not None else 0
+        poder_bot = (
+            analise_de_jogo(self.cartas, rodada, ultima_carta)
+            if ultima_carta is not None
+            else 0
+        )
         if len(self.cartas) == 3:
             if ultima_carta is not None:
                 if poder_bot in [0, 1, 5, 6]:
                     carta = escolhe(self.cartas, 0)
-                elif (poder_bot in [3, 4]) or (len(self.cartas) == 2 and placar == [1, 0]):
+                elif (poder_bot in [3, 4]) or (
+                    len(self.cartas) == 2 and placar == [1, 0]
+                ):
                     carta = escolhe(self.cartas, 1)
                 elif poder_bot == 2:
                     carta = escolhe(self.cartas, 2)
@@ -51,14 +61,23 @@ class Rodada:
         # Carta da mesa
         carta_aleatoria = randint(0, 9)
         naipe_aleatorio = randint(0, 3)
-        carta_da_mesa = [self.cartas[carta_aleatoria], self.naipes[naipe_aleatorio]]
+        carta_da_mesa = [
+            self.cartas[carta_aleatoria],
+            self.naipes[naipe_aleatorio],
+        ]
         print(f'Carta da mesa: {carta_da_mesa}\n')
 
-        # Reorganizando self.cartas
-        manilha = self.cartas[carta_aleatoria + 1] if carta_aleatoria != 9 else self.cartas[0]
+        # A manilha é a carta seguinte à da mesa; ela vai para o fim da
+        # lista para virar a mais forte (índice 9)
+        manilha = (
+            self.cartas[carta_aleatoria + 1]
+            if carta_aleatoria != 9
+            else self.cartas[0]
+        )
         self.cartas.append(self.cartas.pop(self.cartas.index(manilha)))
 
     def entregar_cartas(self):
+        # Sorteia 3 cartas sem repetir as já entregues nesta rodada
         cartas_em_numeros = []
         while len(cartas_em_numeros) < 3:
             carta = [randint(0, 9), randint(0, 3)]
@@ -66,7 +85,9 @@ class Rodada:
                 self.cartas_entregues.append(carta)
                 cartas_em_numeros.append(carta)
         cartas_em_numeros.sort()
-        cartas_em_valores = [[self.cartas[c[0]], self.naipes[c[1]]] for c in cartas_em_numeros]
+        cartas_em_valores = [
+            [self.cartas[c[0]], self.naipes[c[1]]] for c in cartas_em_numeros
+        ]
         return cartas_em_valores
 
 
@@ -91,9 +112,14 @@ class Turno:
             print(f"[{pos}] | {val}")
 
     def confronto(self):
-        if self.situacao == "Humano começa" and self.placar in [[0, 0], [1, 0]]:
+        if self.situacao == "Humano começa" and self.placar in [
+            [0, 0],
+            [1, 0],
+        ]:
             self.carta_humano = self.humano.joga_carta()
-            self.carta_bot = self.bot.joga_carta(self.rodada, self.placar, self.carta_humano)
+            self.carta_bot = self.bot.joga_carta(
+                self.rodada, self.placar, self.carta_humano
+            )
         else:
             self.carta_bot = self.bot.joga_carta(self.rodada, self.placar)
             self.carta_humano = self.humano.joga_carta()
@@ -101,9 +127,13 @@ class Turno:
 
     def compara(self, desempate=False):
         # Cartas
-        carta_humano = self.carta_humano if not desempate else self.humano.cartas[-1]
+        carta_humano = (
+            self.carta_humano if not desempate else self.humano.cartas[-1]
+        )
         carta_bot = self.carta_bot if not desempate else self.bot.cartas[-1]
-        manilha_humano = self.carta_humano if not desempate else self.humano.cartas[-1]
+        manilha_humano = (
+            self.carta_humano if not desempate else self.humano.cartas[-1]
+        )
         manilha_bot = self.carta_bot if not desempate else self.bot.cartas[-1]
 
         # Níveis
@@ -112,10 +142,12 @@ class Turno:
         poder_humano_manilha = self.rodada.naipes.index(manilha_humano[1])
         poder_bot_manilha = self.rodada.naipes.index(manilha_bot[1])
 
-        # Comparação
+        # Comparação: entre manilhas, desempata pelo naipe
         print(f"{carta_humano} x {carta_bot}")
         if poder_humano > poder_bot or (
-                poder_humano == poder_bot and poder_bot == 9 and poder_humano_manilha > poder_bot_manilha
+            poder_humano == poder_bot
+            and poder_bot == 9
+            and poder_humano_manilha > poder_bot_manilha
         ):
             print("Humano ganha turno.\n")
             if not desempate:
@@ -142,6 +174,7 @@ class Turno:
             self.bot.cartas.pop(-1)
 
     def analisa(self):
+        # Quem fez 2 turnos vence; senão, desempata pelas cartas restantes
         if self.placar[0] == 2:
             return "Humano começa"
         elif self.placar[1] == 2:

@@ -1,3 +1,8 @@
+"""Esboço do bot de Discord do PyTruco (cria a "mesa" e o canal de cartas).
+
+O token vem da variável de ambiente TRUCO_TOKEN.
+"""
+
 import asyncio
 import os
 
@@ -16,12 +21,14 @@ async def on_ready():
         'o zap na testa do bêbado',
         'truco consigo mesmo',
         'a mesa do bar pela janela',
-        'um 4 depois de ter pedido 12'
+        'um 4 depois de ter pedido 12',
     ]
     cont = 0
     while True:
         status = status_list[cont]
-        await client.change_presence(status=discord.Status.online, activity=discord.Game(status))
+        await client.change_presence(
+            status=discord.Status.online, activity=discord.Game(status)
+        )
         await asyncio.sleep(30)
         if cont < len(status_list) - 1:
             cont += 1
@@ -46,13 +53,13 @@ async def on_guild_channel_create(channel):
 async def create_secret_channel(guild, category, member, channel_name):
     overwrites = {
         guild.default_role: PermissionOverwrite(read_messages=False),
-        get(guild.roles, name="Admin"): PermissionOverwrite(read_messages=True),
-        member: PermissionOverwrite(read_messages=True)
+        get(guild.roles, name="Admin"): PermissionOverwrite(
+            read_messages=True
+        ),
+        member: PermissionOverwrite(read_messages=True),
     }
     new_channel = await guild.create_text_channel(
-        name=channel_name,
-        category=category,
-        overwrites=overwrites
+        name=channel_name, category=category, overwrites=overwrites
     )
     return new_channel
 
@@ -62,14 +69,25 @@ async def create_secret_channel(guild, category, member, channel_name):
 async def truco(ctx):
     guild = ctx.guild
     member = ctx.author
-    category = get(guild.categories, name="Mesa de bar") if \
-        get(guild.categories, name="Mesa de bar") is not None else await guild.create_category("Mesa de bar")
+    category = (
+        get(guild.categories, name="Mesa de bar")
+        if get(guild.categories, name="Mesa de bar") is not None
+        else await guild.create_category("Mesa de bar")
+    )
     secret_channel_name = f"cartas-do-{member.name}{member.discriminator}"
     if get(guild.text_channels, name=secret_channel_name) is None:
-        await ctx.send('Acha que ganha de mim? Não fode. Entre no canal de texto com seu nome, zé.')
-        await create_secret_channel(guild, category, member, secret_channel_name)
+        await ctx.send(
+            'Acha que ganha de mim? Não fode. '
+            'Entre no canal de texto com seu nome, zé.'
+        )
+        await create_secret_channel(
+            guild, category, member, secret_channel_name
+        )
     else:
-        await ctx.send("Suas cartas já foram entregues! Verifique a existência do canal de texto com seu nome!")
+        await ctx.send(
+            "Suas cartas já foram entregues! "
+            "Verifique a existência do canal de texto com seu nome!"
+        )
 
 
 @client.command()
